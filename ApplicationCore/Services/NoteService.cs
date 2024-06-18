@@ -34,7 +34,9 @@ public class NoteService : INoteService
         Guard.IsNotNull(category, $"There is no Category for this ID {category.Id}.");
         note.Category = category;
         var result = await _noteRepository.Create(note);
-        return result;
+        Guard.IsNotNull<int>(result.Id, "Unable to create Note.");
+
+        return await _noteRepository.GetById(result.Id);
     }
     public async Task<bool> Update(Note note)
     {
@@ -43,7 +45,7 @@ public class NoteService : INoteService
         var noteDB = await _noteRepository.GetById(note.Id);
         Guard.IsNotNull<Note>(noteDB, "The Note doesn't exist");
         Guard.IsNotNullOrWhiteSpace(note.Title, "The Title must not be null.");
-        Guard.IsGreaterThan(note.Id, 0, "The Category must be valid.");
+        Guard.IsGreaterThan(note.Category.Id, 0, "The Category must be valid.");
         var category = await _categoryRepository.GetById(note.Id);
         Guard.IsNotNull(category, $"There is no Category for the ID {note.Category.Id}.");
 
@@ -58,16 +60,16 @@ public class NoteService : INoteService
         var note = await _noteRepository.GetById(Id);
         Guard.IsNotNull<Note>(note, "The Note doesn't exist");
         var result = await _noteRepository.UpdateText(Id, Text);
-        Guard.IsFalse(result, "It's not possible to delete this item");
-        return true;
+        Guard.IsTrue(result, "Unable to update this Note");
+        return result;
     }
-    public async Task<bool> DeleteById(int id) 
+    public async Task<bool> DeleteById(int id)
     {
         Guard.IsGreaterThan(id, 0, $"The Id must be valid, Id: {id}");
         var note = await _noteRepository.GetById(id);
         Guard.IsNotNull<Note>(note, "The Note must not be null");
         var result = await _noteRepository.Delete(note);
-        Guard.IsFalse(result, "It's not possible to delete this item");
-        return true;
+        Guard.IsTrue(result, "Unable to delete this Note.");
+        return result;
     }
 }
