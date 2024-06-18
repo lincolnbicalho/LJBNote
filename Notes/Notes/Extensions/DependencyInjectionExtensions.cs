@@ -4,6 +4,7 @@ using AutoMapper;
 using Infrastructure.Data;
 using Infrastructure.DataAccess;
 using Notes.Services;
+using Radzen;
 
 namespace Notes.Extensions;
 
@@ -22,6 +23,9 @@ public static class DependencyInjectionExtensions
         builder.Services.AddSingleton<IImageService, ImageService>();     
 
         builder.Services.AddSingleton<ISqlDataAccess, SqlDataAccess>();
+
+        builder.Services.AddScoped<DialogService>();
+        builder.Services.AddScoped<NotificationService>();
 
     }
 
