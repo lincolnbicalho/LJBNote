@@ -1,0 +1,26 @@
+﻿USE [NoteDB]
+GO
+
+/****** Object: Table [dbo].[Category] Script Date: 6/17/2024 12:02:28 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Category] (
+    [Id]          INT           IDENTITY (1, 1) NOT NULL,
+    [Title]       VARCHAR (50)  NOT NULL,
+    [Description] VARCHAR (100) NULL
+);
+
+
+CREATE TABLE [dbo].[Note] (
+    [Id]         INT           IDENTITY (1, 1) NOT NULL,
+    [Title]      VARCHAR (100) NOT NULL,
+    [Text]       VARCHAR (MAX) NULL,
+    [CategoryId] INT           NOT NULL,
+    [TimeStamp]  DATETIME      NOT NULL
+);
+
+

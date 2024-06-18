@@ -1,0 +1,110 @@
+﻿@page "/Note/Create"
+@page "/Note/Edit/{Id:int}"
+@rendermode InteractiveServer
+@inject INoteWebService NoteService
+@inject ICategoryWebService CategoryService
+@inject NavigationManager Navigation
+@inject ILogger<Create> Logger
+
+<PageTitle>@_pageTitle</PageTitle>
+<h3>@_pageTitle</h3>
+
+<div class="card shadow-none border my-4 col-md-8 col-sm-12" data-component-card="data-component-card">
+    <div class="card-header p-4 border-bottom">
+        <div class="row g-3 justify-content-between align-items-center">
+            <div class="col-12 col-md">
+                <h4 class="text-body mb-0" data-anchor="data-anchor" id="horizontal-form">@_note.Title<a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#horizontal-form" style="margin-left: 0.1875em; padding-right: 0.1875em; padding-left: 0.1875em;"></a></h4>
+            </div>
+            <div class="col col-md-auto">
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="p-4">
+            <EditForm Model="_note" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="mb-3">
+                    <label for="Title" class="form-label">Title</label>
+                    <InputText @bind-Value="_note.Title" class="form-control" />
+                </div>
+                <div class="form-group row mb-3">
+                    <label for="category" class=" col-form-label">
+                        Category
+                    </label>
+                    <br />
+                    <div class="col-sm-12">
+                        <InputSelect id="category" @bind-Value="_note.Category.Id" class="form-control">
+                            <option value="">Select Category</option>
+                            @foreach (var c in _categories)
+                            {
+                                <option value="@c.Id">@c.Title</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="form-group row mb-3">
+                    <label class="col-sm-2 col-form-label">Text</label>
+                    <InputTextArea @bind-Value="_note.Text" class="form-control" rows="6" />
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="button" class="btn btn-warning" @onclick="CancelHandle">Cancel</button>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private NoteModel _note = new();
+    private List<CategoryModel> _categories = new();
+    private string _pageTitle = "Create Note";
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _categories = await CategoryService.GetAllCategories();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        if (Id > 0)
+        {
+            Logger.LogInformation("Loading the note id: {id}", Id);
+            _note = await NoteService.GetById(Id);
+            _pageTitle = "Edit Note";
+        }
+    }
+
+    private async void HandleValidSubmit()
+    {
+        if (Id == 0)
+        {
+            try
+            {
+                var result = await NoteService.Save(_note);
+                _note = result;
+            }
+            catch (Exception ex)
+            {
+                
+                throw;
+            }
+
+        }
+        else
+        {
+            await NoteService.Update(_note);
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void CancelHandle()
+    {
+        Navigation.NavigateTo("Note");
+    }
+}
