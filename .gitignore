@@ -1,0 +1,9 @@
+/.vs/
+/ApplicationCore/bin/Debug/net8.0
+/ApplicationCore/obj
+/Infrastructure/bin/Debug/net8.0
+/Infrastructure/obj
+/Notes/Notes/bin/Debug/net8.0
+/Notes/Notes/obj
+/Notes/Notes.Client/bin/Debug/net8.0
+/Notes/Notes.Client/obj
