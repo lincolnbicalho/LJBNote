@@ -1,10 +1,18 @@
 ﻿@page "/Note/Create"
 @page "/Note/Edit/{Id:int}"
+@using Radzen
 @rendermode InteractiveServer
 @inject INoteWebService NoteService
 @inject ICategoryWebService CategoryService
 @inject NavigationManager Navigation
-@inject ILogger<Create> Logger
+@inject ILogger<CreateEdit> Logger
+
+@if (isProgress)
+{
+    <div class="rz-m-12">
+        <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </div>
+}
 
 <PageTitle>@_pageTitle</PageTitle>
 <h3>@_pageTitle</h3>
@@ -45,9 +53,9 @@
                 </div>
                 <div class="form-group row mb-3">
                     <label class="col-sm-2 col-form-label">Text</label>
-                    <InputTextArea @bind-Value="_note.Text" class="form-control" rows="6" />
+                    <RadzenHtmlEditor @bind-Value=@_note.Text style="height: 300px;" UploadUrl="upload/image" @oninput=@OnTextInput/>
                 </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary">@_submitName</button>
                 <button type="button" class="btn btn-warning" @onclick="CancelHandle">Cancel</button>
             </EditForm>
         </div>
@@ -59,6 +67,10 @@
     private NoteModel _note = new();
     private List<CategoryModel> _categories = new();
     private string _pageTitle = "Create Note";
+    private string _submitName = "Submit";
+    private Timer timer;
+    private readonly int autosaveInterval = 3000; // 3 seconds
+    private bool isProgress = false;
 
     [Parameter]
     public int Id { get; set; }
@@ -66,7 +78,7 @@
     protected override async Task OnInitializedAsync()
     {
         _categories = await CategoryService.GetAllCategories();
-        await InvokeAsync(StateHasChanged);
+        //await InvokeAsync(StateHasChanged);
     }
 
     protected async override Task OnParametersSetAsync()
@@ -76,35 +88,58 @@
             Logger.LogInformation("Loading the note id: {id}", Id);
             _note = await NoteService.GetById(Id);
             _pageTitle = "Edit Note";
+            _submitName = "Update";
         }
     }
 
     private async void HandleValidSubmit()
     {
+        isProgress = true;
         if (Id == 0)
         {
             try
             {
                 var result = await NoteService.Save(_note);
                 _note = result;
+                Navigation.NavigateTo($"Note/Edit/{_note.Id}");
             }
             catch (Exception ex)
             {
-                
                 throw;
             }
-
         }
         else
         {
             await NoteService.Update(_note);
         }
-
+        isProgress = false;
         await InvokeAsync(StateHasChanged);
     }
 
     private void CancelHandle()
     {
         Navigation.NavigateTo("Note");
+    }
+
+    private void OnTextInput()
+    {
+        //ResetAutosaveTimer();
+    }
+
+    private void ResetAutosaveTimer()
+    {
+        timer?.Dispose();
+        timer = new Timer(Autosave, null, autosaveInterval, Timeout.Infinite);
+    }
+
+    private void Autosave(object state)
+    {
+        Logger.LogInformation("Text Saved: {text}", _note.Text);
+        HandleValidSubmit();
+    }
+
+    private void Dispose()
+    {
+        timer?.Dispose();
     }
 }
