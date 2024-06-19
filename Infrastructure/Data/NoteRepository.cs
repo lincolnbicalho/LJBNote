@@ -52,14 +52,14 @@ public class NoteRepository : INoteRepository
     }
     public async Task<bool> Update(Note entity)
     {
-        await _dataAccess.SaveData<dynamic>("UPDATE dbo.Note [Title] = @Title, [Text] = @Text, [CategoryId] = @CategoryId WHERE Id = @Id",
-                                    new { Id = entity.Id, entity.Title, entity.Text, CategoryId = entity.Category.Id }, CommandType.Text);
+        await _dataAccess.SaveData<dynamic>("UPDATE dbo.Note SET [Title] = @Title, [Text] = @Text, [CategoryId] = @CategoryId WHERE Id = @Id",
+                                    new { entity.Id, entity.Title, entity.Text, CategoryId = entity.Category.Id }, CommandType.Text);
         return true;
     }
 
     public async Task<bool> UpdateText(int Id, string Text)
     {
-        await _dataAccess.SaveData<dynamic>("UPDATE dbo.Note Text = @Text WHERE Id = @Id", new { Id, Text }, CommandType.Text);
+        await _dataAccess.SaveData<dynamic>("UPDATE dbo.Note SET Text = @Text WHERE Id = @Id", new { Id, Text }, CommandType.Text);
         return true;
     }
     public async Task<bool> Delete(Note entity)
