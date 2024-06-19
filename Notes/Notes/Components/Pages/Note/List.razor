@@ -1,4 +1,5 @@
 ﻿@page "/Note"
+@using Radzen
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
@@ -22,7 +23,9 @@
 
 @if (_notes is null)
 {
-    <p><em>Loading...</em></p>
+    <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
+        <Template>Wait</Template>
+    </RadzenProgressBarCircular>
 }
 else
 {
@@ -71,9 +74,12 @@ else
         Navigation.NavigateTo($"Note/Edit/{note.Id}");
     }
 
-    private void DeleteNote(NoteModel note)
+    private async void DeleteNote(NoteModel note)
     {
         Logger.LogInformation("Deleting Note Id: {id}", note.Id);
-        NoteService.DeleteById(note.Id);
+        bool result = await NoteService.DeleteById(note.Id);
+        if (result)
+            _notes.Remove(note);
+        await InvokeAsync(StateHasChanged);
     }
 }
