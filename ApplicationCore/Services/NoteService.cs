@@ -46,7 +46,7 @@ public class NoteService : INoteService
         Guard.IsNotNull<Note>(noteDB, "The Note doesn't exist");
         Guard.IsNotNullOrWhiteSpace(note.Title, "The Title must not be null.");
         Guard.IsGreaterThan(note.Category.Id, 0, "The Category must be valid.");
-        var category = await _categoryRepository.GetById(note.Id);
+        var category = await _categoryRepository.GetById(note.Category.Id);
         Guard.IsNotNull(category, $"There is no Category for the ID {note.Category.Id}.");
 
         await _noteRepository.Update(note);

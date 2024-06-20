@@ -1,0 +1,83 @@
+﻿@using Radzen
+@inject ILogger<ImageUploadComponent> Logger
+@inject IImageOCRNoteService OCRService
+
+
+<div class="form-group row mb-3">
+    @if (_progress > 0 && _progress < 100)
+    {
+        <div class="rz-m-12">
+            <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Primary" Value="_progress" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        </div>
+    }
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.Left" Class="rz-p-1" Gap="1rem">
+            <RadzenBadge BadgeStyle="BadgeStyle.Primary" Text=@filesProcess />
+            <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text=@filesProcessed />
+        </RadzenStack>
+        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Manual Upload</RadzenText>
+        <RadzenUpload @ref="upload" Auto="false" Multiple="true" Url=@url Change=@(args => OnChange(args, "Manual Upload")) InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
+                      Progress=@(args => OnProgress(args, "Manual Upload")) class="w-100" />
+        <RadzenButton Text="Upload" Click=@(args => upload.Upload()) class="mt-4" />
+        <RadzenButton Click=@(args => ReadAndOCRImages()) class="mt-4" Text="Read Images" ButtonStyle="ButtonStyle.Info" />
+    </RadzenCard>
+
+</div>
+@code {
+    private string? filesProcess;
+    private string? filesProcessed;
+    private int _progress = 0;
+    private RadzenUpload upload;
+    private string url = "api/upload/multiple/";
+
+    [Parameter]
+    public EventCallback<NoteModel> OnProcessedImages { get; set; }
+    [Parameter]
+    public NoteModel? Note { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        url = url + Note.Id;
+
+        filesProcess = $"Files to process {OCRService.NumberOfImagestoProcess(Note.Id)}";
+        filesProcessed = $"Files to processed {OCRService.NumberOfImagesProcessed(Note.Id)}";
+    }
+
+
+    string fileName = "FileName";
+    string test = "Test Name";
+    long? fileSize;
+
+    void OnChange(UploadChangeEventArgs args, string name)
+    {
+        Logger.LogInformation($"{name} value changed");
+    }
+
+    void OnError(UploadErrorEventArgs args, string name)
+    {
+        Logger.LogInformation($"{args.Message}");
+    }
+
+
+    private void OnProgress(UploadProgressArgs args, string name)
+    {
+        Logger.LogInformation($"% '{name}' / {args.Loaded} of {args.Total} bytes.");
+        Logger.LogInformation($"progress = {args.Progress}");
+        _progress = args.Progress;
+    }
+
+    private async void ReadAndOCRImages()
+    {
+        _progress = 99;
+        var listOCRImages = await OCRService.ReadImages(Note.Id);
+        foreach (var item in listOCRImages)
+        {
+            Note.Text += item.OCRText;
+        }
+        _progress = 0;
+        filesProcess = $"Files to process {OCRService.NumberOfImagestoProcess(Note.Id)}";
+        filesProcessed = $"Files to processed {OCRService.NumberOfImagesProcessed(Note.Id)}";
+        await OnProcessedImages.InvokeAsync(Note);
+    }
+}
+

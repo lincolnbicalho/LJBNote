@@ -1,4 +1,5 @@
 ﻿@page "/Category"
+@using Radzen
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
@@ -22,7 +23,9 @@
 
 @if (categories is null)
 {
-    <p><em>Loading...</em></p>
+    <div class="rz-m-12">
+        <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </div>
 }
 else
 {

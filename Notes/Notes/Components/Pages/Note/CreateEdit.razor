@@ -7,13 +7,6 @@
 @inject NavigationManager Navigation
 @inject ILogger<CreateEdit> Logger
 
-@if (isProgress)
-{
-    <div class="rz-m-12">
-        <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
-    </div>
-}
-
 <PageTitle>@_pageTitle</PageTitle>
 <h3>@_pageTitle</h3>
 
@@ -53,8 +46,12 @@
                 </div>
                 <div class="form-group row mb-3">
                     <label class="col-sm-2 col-form-label">Text</label>
-                    <RadzenHtmlEditor @bind-Value=@_note.Text style="height: 300px;" UploadUrl="upload/image" @oninput=@OnTextInput/>
+                    <RadzenHtmlEditor @bind-Value=@_note.Text style="height: 300px;" UploadUrl="upload/image" />
                 </div>
+                @if (_note.Id > 0)
+                {
+                    <ImageUploadComponent Note="_note" OnProcessedImages="HandleProccedImages"/>
+                }
                 <button type="submit" class="btn btn-primary">@_submitName</button>
                 <button type="button" class="btn btn-warning" @onclick="CancelHandle">Cancel</button>
             </EditForm>
@@ -68,9 +65,6 @@
     private List<CategoryModel> _categories = new();
     private string _pageTitle = "Create Note";
     private string _submitName = "Submit";
-    private Timer timer;
-    private readonly int autosaveInterval = 3000; // 3 seconds
-    private bool isProgress = false;
 
     [Parameter]
     public int Id { get; set; }
@@ -94,7 +88,6 @@
 
     private async void HandleValidSubmit()
     {
-        isProgress = true;
         if (Id == 0)
         {
             try
@@ -105,14 +98,14 @@
             }
             catch (Exception ex)
             {
-                throw;
+                Logger.LogError("Error while trying to save: {message}", ex.Message);
+                throw ex;
             }
         }
         else
         {
             await NoteService.Update(_note);
         }
-        isProgress = false;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -121,25 +114,33 @@
         Navigation.NavigateTo("Note");
     }
 
-    private void OnTextInput()
+    private void HandleProccedImages(NoteModel note)
     {
+        _note.Text += note.Text;
+    }
+    /*TODO: AutoSave
+    private Timer timer;
+    private readonly int autosaveInterval = 3000; // 3 seconds
+    private void OnTextInput()
+        {
         //ResetAutosaveTimer();
     }
 
     private void ResetAutosaveTimer()
-    {
+        {
         timer?.Dispose();
         timer = new Timer(Autosave, null, autosaveInterval, Timeout.Infinite);
     }
 
     private void Autosave(object state)
-    {
+        {
         Logger.LogInformation("Text Saved: {text}", _note.Text);
         HandleValidSubmit();
     }
 
     private void Dispose()
-    {
+        {
         timer?.Dispose();
     }
+    */
 }

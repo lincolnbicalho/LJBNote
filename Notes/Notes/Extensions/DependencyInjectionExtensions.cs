@@ -26,6 +26,8 @@ public static class DependencyInjectionExtensions
 
         builder.Services.AddScoped<DialogService>();
         builder.Services.AddScoped<NotificationService>();
+        builder.Services.AddScoped<IImageOCRNoteService, ImageOCRNoteService>();
+
 
     }
 
