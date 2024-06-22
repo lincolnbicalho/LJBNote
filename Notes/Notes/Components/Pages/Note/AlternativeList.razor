@@ -1,0 +1,112 @@
+﻿@page "/Note"
+@using Radzen
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject INoteWebService NoteService
+@inject ILogger<List> Logger
+
+<PageTitle>Note List</PageTitle>
+<RadzenText TextStyle="TextStyle.H2" TagName="TagName.H1" Class="rz-pt-8">
+    Note List
+</RadzenText>
+
+<RadzenRow Class="rz-p-4">
+    <RadzenButton Variant="Variant.Flat" Shade="Shade.Lighter" Click=@(args => Navigation.NavigateTo("Note/Create")) Text="Create Note" ButtonStyle="ButtonStyle.Primary" />
+</RadzenRow>
+
+<RadzenStack>
+    <RadzenRow>
+        <RadzenColumn Size="12" SizeMD="12" SizeLG="12">
+            <RadzenCard>
+                <RadzenDataList AllowVirtualization=true Style="@("height:400px;overflow:auto;")"
+                                WrapItems=false AllowPaging=true
+                                Data="@_notes" TItem="NoteModel" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
+                    <Template Context="note">
+                        <RadzenCard Style="width: 100%; padding: 0;">
+                            <RadzenRow Gap="0">
+                                <RadzenColumn Size="12" SizeLG="3" Class="rz-p-4 product-title">
+                                    <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-mb-0">Title</RadzenText>
+                                    <RadzenText TextAlign="TextAlign.Left" TextStyle="TextStyle.H6" TagName="TagName.H5" class="text-white">@(note.Title)</RadzenText>
+                                </RadzenColumn>
+                                <RadzenColumn Size="12" SizeLG="7" Class="rz-p-4">
+                                    <RadzenRow Gap="0">
+                                        <RadzenColumn Size="12" SizeMD="6" SizeLG="2">
+                                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-mb-0">Id</RadzenText>
+                                            <RadzenText TextStyle="TextStyle.Body2">@(note.Id)</RadzenText>
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="6" SizeLG="5">
+                                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-mb-0">Resume</RadzenText>
+                                            <RadzenText TextStyle="TextStyle.Body2">@(note.Resume)</RadzenText>
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="12" SizeMD="6" SizeLG="3">
+                                            <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-mb-0">Category</RadzenText>
+                                            <RadzenText TextStyle="TextStyle.Body2">@(note.Category.Title)</RadzenText>
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                </RadzenColumn>
+                                <RadzenColumn Size="12" SizeLG="2" Class="rz-p-4">
+                                    <RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Primary" Style="width: 45%" Click="() => EditNote(note)" />
+                                    <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Style="width: 45%" Click="() => DeleteNote(note)" />
+                                </RadzenColumn>
+                            </RadzenRow>
+                        </RadzenCard>
+                    </Template>
+                </RadzenDataList>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenStack>
+
+@if (_notes is null)
+{
+    <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
+        <Template>Wait</Template>
+    </RadzenProgressBarCircular>
+}
+
+<style>
+    .product-title {
+        min-height: 72px;
+        background-color: var(--rz-info-light);
+    }
+
+    .price-badge {
+        font-size: 16px;
+        font-weight: bold;
+        line-height: 20px;
+        padding: 8px;
+    }
+</style>
+
+@code {
+    IQueryable<NoteModel>? _notes;
+    bool allowVirtualization = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+
+    private void EditNote(NoteModel note)
+    {
+        Navigation.NavigateTo($"Note/Edit/{note.Id}");
+    }
+
+    private async void DeleteNote(NoteModel note)
+    {
+        Logger.LogInformation("Deleting Note Id: {id}", note.Id);
+        bool result = await NoteService.DeleteById(note.Id);
+        if (result)
+            await LoadData();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadData()
+    {
+        Logger.LogInformation("Loading all notes");
+        var result = await NoteService.GetAllNotes();
+        _notes = result.AsQueryable();
+    }
+}
