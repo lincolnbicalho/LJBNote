@@ -46,11 +46,4 @@ public class UploadController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
-
-    [HttpGet("get")]
-    public ActionResult Get()
-    {
-        return Ok("Funcionando");
-    }
-
 }

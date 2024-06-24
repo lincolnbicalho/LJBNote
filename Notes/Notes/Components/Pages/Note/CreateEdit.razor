@@ -22,7 +22,7 @@
     </div>
     <div class="card-body p-0">
         <div class="p-4">
-            <EditForm Model="_note" OnValidSubmit="HandleValidSubmit">
+            <EditForm Model="_note" OnValidSubmit="HandleValidSubmit" class="mb-4">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
                 <div class="mb-3">
@@ -33,7 +33,6 @@
                     <label for="category" class=" col-form-label">
                         Category
                     </label>
-                    <br />
                     <div class="col-sm-12">
                         <InputSelect id="category" @bind-Value="_note.Category.Id" class="form-control">
                             <option value="">Select Category</option>
@@ -44,14 +43,14 @@
                         </InputSelect>
                     </div>
                 </div>
-                <div class="form-group row mb-3">
-                    <label class="col-sm-2 col-form-label">Text</label>
-                    <RadzenHtmlEditor @bind-Value=@_note.Text style="height: 300px;" UploadUrl="upload/image" />
-                </div>
                 @if (_note.Id > 0)
                 {
-                    <ImageUploadComponent Note="_note" OnProcessedImages="HandleProccedImages"/>
+                    <ImageUploadComponent Note="_note" OnProcessedImages="HandleProccedImages" />
                 }
+                <div class="form-group row mb-3">
+                    <label class="col-sm-2 col-form-label">Text</label>
+                    <RadzenHtmlEditor @bind-Value=@_note.Text style="min-height: 500px;max-height:1000px;" UploadUrl="upload/image" />
+                </div>
                 <button type="submit" class="btn btn-primary">@_submitName</button>
                 <button type="button" class="btn btn-warning" @onclick="CancelHandle">Cancel</button>
             </EditForm>

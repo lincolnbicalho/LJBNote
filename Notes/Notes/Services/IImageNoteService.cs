@@ -2,7 +2,7 @@
 
 namespace Notes.Services
 {
-    public interface IImageOCRNoteService
+    public interface IImageNoteService
     {
         int NumberOfImagesProcessed(int NoteId);
         int NumberOfImagestoProcess(int NoteId);

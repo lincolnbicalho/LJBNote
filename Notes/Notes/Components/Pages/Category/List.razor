@@ -8,56 +8,76 @@
 
 <PageTitle>Category List</PageTitle>
 
-<h1>Category List</h1>
-
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H4" Class="rz-pt-8">
+    Category List
+</RadzenText>
 <p>This is the list of categories of the notes.</p>
 
-<p class="esh-link-wrapper">
-    <a class="icon-link text-decoration-none" href="Category/Create">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-square-fill" viewBox="0 0 16 16">
-            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm6.5 4.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3a.5.5 0 0 1 1 0" />
-        </svg>
-        New Category
-    </a>
-</p>
+
+<RadzenRow Class="rz-pb-4">
+    <RadzenButton Variant="Variant.Flat" Shade="Shade.Lighter" Click=@(args => Navigation.NavigateTo("Category/Create")) Text="New Category" ButtonStyle="ButtonStyle.Primary" />
+</RadzenRow>
 
 @if (categories is null)
 {
-    <div class="rz-m-12">
-        <RadzenProgressBar ProgressBarStyle="ProgressBarStyle.Primary" Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
-    </div>
+    <RadzenProgressBarCircular ShowValue="true" Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Large">
+        <Template>Wait</Template>
+    </RadzenProgressBarCircular>
 }
 else
 {
-    <div class="row col-md-12">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Id</th>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var c in categories)
-                {
-                    <tr>
-                        <td>@c.Id</td>
-                        <td>@c.Title</td>
-                        <td>@c.Description</td>
-                        <td>
-                            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => EditCategory(c)">Edit</button>
-                            <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => DeleteCategory(c)">Delete</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    
+    <RadzenStack>
+        <RadzenRow>
+            <RadzenColumn Size="12" SizeMD="12" SizeLG="12">
+                <RadzenCard>
+                    <RadzenDataList AllowVirtualization=true Style="@("min-height:400px;overflow:auto;")"
+                                    WrapItems=false AllowPaging=true
+                                    Data="@categories" TItem="CategoryModel" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
+                        <Template Context="c">
+                            <RadzenCard Style="width: 100%; padding: 0;">
+                                <RadzenRow Gap="0">
+                                    <RadzenColumn Size="12" SizeLG="3" Class="rz-p-4 product-title">
+                                        <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-mb-0">Title</RadzenText>
+                                        <RadzenText TextAlign="TextAlign.Left" TextStyle="TextStyle.H6" TagName="TagName.H5" class="text-white">@(c.Title)</RadzenText>
+                                    </RadzenColumn>
+                                    <RadzenColumn Size="12" SizeLG="7" Class="rz-p-4">
+                                        <RadzenRow Gap="0">
+                                            <RadzenColumn Size="12" SizeMD="6" SizeLG="2">
+                                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-mb-0">Id</RadzenText>
+                                                <RadzenText TextStyle="TextStyle.Body2">@(c.Id)</RadzenText>
+                                            </RadzenColumn>
+                                            <RadzenColumn Size="12" SizeMD="6" SizeLG="5">
+                                                <RadzenText TextStyle="TextStyle.H6" TagName="TagName.H5" Class="rz-mb-0">Description</RadzenText>
+                                                <RadzenText TextStyle="TextStyle.Body2">@(c.Description)</RadzenText>
+                                            </RadzenColumn>
+                                        </RadzenRow>
+                                    </RadzenColumn>
+                                    <RadzenColumn Size="12" SizeLG="2" Class="rz-p-4">
+                                        <RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Primary" Style="width: 45%" Click="() => EditCategory(c)" />
+                                        <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Style="width: 45%" Click="() => DeleteCategory(c)" />
+                                    </RadzenColumn>
+                                </RadzenRow>
+                            </RadzenCard>
+                        </Template>
+                    </RadzenDataList>
+                </RadzenCard>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenStack>
 }
+<style>
+    .product-title {
+        min-height: 72px;
+        background-color: var(--rz-info-light);
+    }
 
+    .price-badge {
+        font-size: 16px;
+        font-weight: bold;
+        line-height: 20px;
+        padding: 8px;
+    }
+</style>
 @code {
     private List<CategoryModel>? categories;
 

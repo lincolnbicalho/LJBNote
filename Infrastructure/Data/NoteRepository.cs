@@ -52,8 +52,8 @@ public class NoteRepository : INoteRepository
     }
     public async Task<bool> Update(Note entity)
     {
-        await _dataAccess.SaveData<dynamic>("UPDATE dbo.Note SET [Title] = @Title, [Text] = @Text, [CategoryId] = @CategoryId WHERE Id = @Id",
-                                    new { entity.Id, entity.Title, entity.Text, CategoryId = entity.Category.Id }, CommandType.Text);
+        await _dataAccess.SaveData<dynamic>("UPDATE dbo.Note SET [Title] = @Title, [Text] = @Text, [Resume] = @Resume, [CategoryId] = @CategoryId WHERE Id = @Id",
+                                    new { entity.Id, entity.Title, entity.Text, entity.Resume ,CategoryId = entity.Category.Id }, CommandType.Text);
         return true;
     }
 

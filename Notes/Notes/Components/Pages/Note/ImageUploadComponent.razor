@@ -1,9 +1,9 @@
 ﻿@using Radzen
 @inject ILogger<ImageUploadComponent> Logger
-@inject IImageOCRNoteService OCRService
+@inject IImageNoteService OCRService
 
 
-<div class="form-group row mb-3">
+<div class="form-group row m-1 mb-3 mt-3">
     @if (_progress > 0 && _progress < 100)
     {
         <div class="rz-m-12">
@@ -15,11 +15,16 @@
             <RadzenBadge BadgeStyle="BadgeStyle.Primary" Text=@filesProcess />
             <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text=@filesProcessed />
         </RadzenStack>
-        <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Manual Upload</RadzenText>
-        <RadzenUpload @ref="upload" Auto="false" Multiple="true" Url=@url Change=@(args => OnChange(args, "Manual Upload")) InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
-                      Progress=@(args => OnProgress(args, "Manual Upload")) class="w-100" />
-        <RadzenButton Text="Upload" Click=@(args => upload.Upload()) class="mt-4" />
-        <RadzenButton Click=@(args => ReadAndOCRImages()) class="mt-4" Text="Read Images" ButtonStyle="ButtonStyle.Info" />
+        <RadzenStack Orientation="Orientation.Horizontal" Wrap="FlexWrap.Wrap" JustifyContent="JustifyContent.Left" Class="rz-p-1" Gap="1rem">
+            <RadzenUpload @ref="upload" Auto="false" Multiple="true" Url=@url Change=@(args => OnChange(args, "Manual Upload")) InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
+                          Progress=@(args => OnProgress(args, "Manual Upload")) class="w-100" />
+            @if (showUploadButton)
+            {
+                <RadzenButton Text="Upload" Click=@(args => upload.Upload()) class="mt-4" />
+                <RadzenButton Click=@(args => ReadAndOCRImages()) class="mt-4" Text="Read Images" ButtonStyle="ButtonStyle.Info" />
+            }
+        </RadzenStack>
+        
     </RadzenCard>
 
 </div>
@@ -27,6 +32,7 @@
     private string? filesProcess;
     private string? filesProcessed;
     private int _progress = 0;
+    private bool showUploadButton = false;
     private RadzenUpload upload;
     private string url = "api/upload/multiple/";
 
@@ -39,8 +45,11 @@
     {
         url = url + Note.Id;
 
-        filesProcess = $"Files to process {OCRService.NumberOfImagestoProcess(Note.Id)}";
+        int numberOfFIlesToProcess = OCRService.NumberOfImagestoProcess(Note.Id);
+        filesProcess = $"Files to process {numberOfFIlesToProcess}";
         filesProcessed = $"Files to processed {OCRService.NumberOfImagesProcessed(Note.Id)}";
+        if (numberOfFIlesToProcess > 0)
+            showUploadButton = true;
     }
 
 
@@ -50,6 +59,7 @@
 
     void OnChange(UploadChangeEventArgs args, string name)
     {
+        showUploadButton = true;
         Logger.LogInformation($"{name} value changed");
     }
 
@@ -69,11 +79,13 @@
     private async void ReadAndOCRImages()
     {
         _progress = 99;
+        string ocrText = string.Empty;
         var listOCRImages = await OCRService.ReadImages(Note.Id);
         foreach (var item in listOCRImages)
         {
-            Note.Text += item.OCRText;
+            ocrText += item.OCRText;
         }
+        Note.Text += ocrText;
         _progress = 0;
         filesProcess = $"Files to process {OCRService.NumberOfImagestoProcess(Note.Id)}";
         filesProcessed = $"Files to processed {OCRService.NumberOfImagesProcessed(Note.Id)}";

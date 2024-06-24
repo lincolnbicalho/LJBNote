@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Notes.Components;
 using Notes.Extensions;
 
@@ -12,6 +13,11 @@ builder.Services.AddControllers();
 builder.AddAutoMapperService();
 builder.AddCustomServices();
 
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.AddFile($"logs/app-log-{DateTime.Now.ToString("yyyy-mm-dd")}.txt");
 
 var app = builder.Build();
 

@@ -7,18 +7,19 @@ using static OpenAI_API.Chat.ChatMessage;
 
 namespace Notes.Services;
 
-public class ImageOCRNoteService : IImageOCRNoteService
+public class ImageNoteService : IImageNoteService
 {
     private readonly IConfiguration _config;
-    private readonly ILogger<ImageOCRNoteService> _logger;
+    private readonly ILogger<ImageNoteService> _logger;
     private readonly string? _key;
     private readonly string? _uploadPath;
-    public ImageOCRNoteService(IConfiguration config, ILogger<ImageOCRNoteService> logger)
+    public ImageNoteService(IConfiguration config, ILogger<ImageNoteService> logger)
     {
         _config = config;
         _logger = logger;
         _key = _config.GetValue<string>("ImageUpload:SecretKeyApi");
         _uploadPath = Path.Combine(Directory.GetCurrentDirectory(), _config.GetValue<string>("ImageUpload:Path"));
+        CheckDirectoryExist(_uploadPath);
     }
     public async Task<List<ImageNoteModel>> ReadImages(int NoteId)
     {
@@ -106,5 +107,13 @@ public class ImageOCRNoteService : IImageOCRNoteService
         chat.AppendUserInput("Give me just the transcription of the image and nothing more.", ImageInput.FromFile(imagePath));
         string response = await chat.GetResponseFromChatbotAsync();
         return response;
+    }
+
+    private void CheckDirectoryExist(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            Directory.CreateDirectory(path);
+        }
     }
 }

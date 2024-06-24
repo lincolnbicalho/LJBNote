@@ -7,11 +7,11 @@
 @inject ILogger<List> Logger
 
 <PageTitle>Note List</PageTitle>
-<RadzenText TextStyle="TextStyle.H2" TagName="TagName.H1" Class="rz-pt-8">
+<RadzenText TextStyle="TextStyle.H4" TagName="TagName.H4" Class="rz-pt-8">
     Note List
 </RadzenText>
 
-<RadzenRow Class="rz-p-4">
+<RadzenRow Class="rz-pb-4">
     <RadzenButton Variant="Variant.Flat" Shade="Shade.Lighter" Click=@(args => Navigation.NavigateTo("Note/Create")) Text="Create Note" ButtonStyle="ButtonStyle.Primary" />
 </RadzenRow>
 
@@ -19,7 +19,7 @@
     <RadzenRow>
         <RadzenColumn Size="12" SizeMD="12" SizeLG="12">
             <RadzenCard>
-                <RadzenDataList AllowVirtualization=true Style="@("height:400px;overflow:auto;")"
+                <RadzenDataList AllowVirtualization=true Style="@("min-height:400px;overflow:auto;")"
                                 WrapItems=false AllowPaging=true
                                 Data="@_notes" TItem="NoteModel" PageSize="5" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true">
                     <Template Context="note">
